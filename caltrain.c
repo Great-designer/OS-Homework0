@@ -1,14 +1,14 @@
 #include "pintos_thread.h"
 
-struct station//³µÕ¾½á¹¹Ìå
+struct station//è½¦ç«™ç»“æž„ä½“
 {
 	struct lock Lock;
-	struct condition mayLeave;//³µµÈ³Ë¿Í
-	struct condition Arrived;//³Ë¿ÍµÈ³µ
-	int Waiting;//ÔÚ³µÕ¾µÈ´ýµÄ³Ë¿ÍÊý
-	int Available;//»ð³µÉÏµÄ¿Õ×ùÎ»Êý
-	int Boarding;//ÉÏ³µÖÐ£¬³µÉÏ»¹Ã»×øºÃµÄÈË
-	int inStation;//³µÔÚ³µÕ¾£¬³µÕ¾ÓÐ³µ
+	struct condition mayLeave;//è½¦ç­‰ä¹˜å®¢
+	struct condition Arrived;//ä¹˜å®¢ç­‰è½¦
+	int Waiting;//åœ¨è½¦ç«™ç­‰å¾…çš„ä¹˜å®¢æ•°
+	int Available;//ç«è½¦ä¸Šçš„ç©ºåº§ä½æ•°
+	int Boarding;//ä¸Šè½¦ä¸­ï¼Œè½¦ä¸Šè¿˜æ²¡åå¥½çš„äºº
+	int inStation;//è½¦åœ¨è½¦ç«™ï¼Œè½¦ç«™æœ‰è½¦
 };
 
 void station_init(struct station *station)
@@ -22,44 +22,44 @@ void station_init(struct station *station)
 	station->inStation=0;
 }
 
-void station_load_train(struct station *station, int count)//ÁÐ³µµ½´ï³µÕ¾²¢´ò¿ª³µÃÅ
+void station_load_train(struct station *station, int count)//åˆ—è½¦åˆ°è¾¾è½¦ç«™å¹¶æ‰“å¼€è½¦é—¨
 {
 	lock_acquire(&station->Lock);
-	station->inStation=1;//½øÕ¾
-	station->Boarding=0;//Ã»ÈËÉÏ³µ
-	station->Available=count;//¼ÇÂ¼¿Õ×ùÎ»Êý
-	if(station->Available>0&&station->Waiting>0)//»¹ÓÐ¿Õ×ùÎ»£¬³µÕ¾ÓÐ³Ë¿Í£¬¾ÍÍ¨Öª³Ë¿Í
+	station->inStation=1;//è¿›ç«™
+	station->Boarding=0;//æ²¡äººä¸Šè½¦
+	station->Available=count;//è®°å½•ç©ºåº§ä½æ•°
+	if(station->Available>0&&station->Waiting>0)//è¿˜æœ‰ç©ºåº§ä½ï¼Œè½¦ç«™æœ‰ä¹˜å®¢ï¼Œå°±é€šçŸ¥ä¹˜å®¢
 	{
 		cond_broadcast(&station->Arrived,&station->Lock);
 	}
-	while(station->Available>0&&(station->Waiting>0||station->Boarding>0))//ÓÐ¿Õ×ùÎ»£¬ÇÒÓÐÎ´ÉÏ³µ»òÎ´×øÏÂµÄ³Ë¿Í£¬¾ÍÒªµÈ´ý
+	while(station->Available>0&&(station->Waiting>0||station->Boarding>0))//æœ‰ç©ºåº§ä½ï¼Œä¸”æœ‰æœªä¸Šè½¦æˆ–æœªåä¸‹çš„ä¹˜å®¢ï¼Œå°±è¦ç­‰å¾…
 	{
 		cond_wait(&station->mayLeave,&station->Lock);
 	}
-	station->Available=0;//Ã»ÓÐ¿Õ×ùÎ»
-	station->inStation=0;//³öÕ¾ 
+	station->Available=0;//æ²¡æœ‰ç©ºåº§ä½
+	station->inStation=0;//å‡ºç«™
 	lock_release(&station->Lock);
 }
 
-void station_wait_for_train(struct station *station)//³Ë¿Íµ½´ï³µÕ¾
+void station_wait_for_train(struct station *station)//ä¹˜å®¢åˆ°è¾¾è½¦ç«™
 {
 	lock_acquire(&station->Lock);
-	station->Waiting++;//³µÕ¾ÈËÊýÔö¼Ó
-	while(!station->inStation||station->Boarding>=station->Available)//³µÕ¾Ã»³µ£¬²¢ÇÒÃ»×øºÃµÄÈË´ïµ½ÁË¿Õ×ùÎ»Êý»ò¸ü¶à£¬¾ÍÒªµÈ
+	station->Waiting++;//è½¦ç«™äººæ•°å¢žåŠ 
+	while(!station->inStation||station->Boarding>=station->Available)//è½¦ç«™æ²¡è½¦ï¼Œå¹¶ä¸”æ²¡åå¥½çš„äººè¾¾åˆ°äº†ç©ºåº§ä½æ•°æˆ–æ›´å¤šï¼Œå°±è¦ç­‰
 	{
 		cond_wait(&station->Arrived,&station->Lock);
 	}
-	station->Boarding++;//ÉÏ³µ
-	station->Waiting--;//³µÕ¾ÈËÊý¼õÉÙ
+	station->Boarding++;//ä¸Šè½¦
+	station->Waiting--;//è½¦ç«™äººæ•°å‡å°‘
 	lock_release(&station->Lock);
 }
 
-void station_on_board(struct station *station)//³Ë¿Í¾Í×ù
+void station_on_board(struct station *station)//ä¹˜å®¢å°±åº§
 {
 	lock_acquire(&station->Lock);
-	station->Available--;//¿Õ×ùÎ»Êý¼õÉÙ
-	station->Boarding--;//Ã»×øºÃµÄÈËÊý¼õÉÙ
-	if(station->Available==0||station->Boarding==0)//Èç¹ûÃ»ÓÐ¿Õ×ùÎ»£¬»òÕßËùÓÐÈË¶¼×øºÃÁË£¬¾ÍÍ¨Öª·¢³µ
+	station->Available--;//ç©ºåº§ä½æ•°å‡å°‘
+	station->Boarding--;//æ²¡åå¥½çš„äººæ•°å‡å°‘
+	if(station->Available==0||station->Boarding==0)//å¦‚æžœæ²¡æœ‰ç©ºåº§ä½ï¼Œæˆ–è€…æ‰€æœ‰äººéƒ½åå¥½äº†ï¼Œå°±é€šçŸ¥å‘è½¦
 	{
 		cond_signal(&station->mayLeave,&station->Lock);
 	}

@@ -49,7 +49,7 @@ void
 alarm_handler(int foo)
 {
 	fprintf(stderr, "Error: Failed to complete after 10 seconds. Something's "
-		"wrong, or your system is terribly slow.\n");
+	        "wrong, or your system is terribly slow.\n");
 	exit(1);
 }
 
@@ -67,9 +67,10 @@ main(int argc, char** argv)
 	struct reaction reaction;
 	reaction_init(&reaction);
 
-	if (argc != 2 || atoi(argv[1]) < 0 || atoi(argv[1]) > 100) {
+	if (argc != 2 || atoi(argv[1]) < 0 || atoi(argv[1]) > 100)
+	{
 		fprintf(stderr, "usage: %s percentageOfHydrogenAtoms\n"
-			" e.g.: %s 50\n", argv[0], argv[0]);
+		        " e.g.: %s 50\n", argv[0], argv[0]);
 		exit(1);
 	}
 
@@ -84,17 +85,22 @@ main(int argc, char** argv)
 	int oxygen_atoms = 0;
 	int hydrogen_pct = atoi(argv[1]);
 
-	for (i = 0; i < total_atoms; i++) {
+	for (i = 0; i < total_atoms; i++)
+	{
 		pthread_t tid;
 		int ret;
-		if ((random() % 100) < hydrogen_pct) {
+		if ((random() % 100) < hydrogen_pct)
+		{
 			hydrogen_atoms++;
 			ret = pthread_create(&tid, NULL, hydrogen_thread, &reaction);
-		} else {
+		}
+		else
+		{
 			oxygen_atoms++;
 			ret = pthread_create(&tid, NULL, oxygen_thread, &reaction);
 		}
-		if (ret != 0) {
+		if (ret != 0)
+		{
 			// If this fails, perhaps we exceeded some system limit.
 			// Try reducing 'total_atoms'.
 			perror("pthread_create");
@@ -104,8 +110,8 @@ main(int argc, char** argv)
 
 	int expected_molecules = MIN(hydrogen_atoms / 2, oxygen_atoms);
 	printf("Created %d H and %d O atoms (%.1f%% H), expecting %d H2O molecules\n",
-		hydrogen_atoms, oxygen_atoms, (double)hydrogen_atoms / total_atoms * 100.0,
-		expected_molecules);
+	       hydrogen_atoms, oxygen_atoms, (double)hydrogen_atoms / total_atoms * 100.0,
+	       expected_molecules);
 
 	// Wait for expected reactions to complete.
 	while (water_molecules != expected_molecules)
@@ -115,22 +121,25 @@ main(int argc, char** argv)
 	// we see too many reactions.
 	usleep(100000);
 
-	if (water_molecules != expected_molecules) {
+	if (water_molecules != expected_molecules)
+	{
 		fprintf(stderr, "Error: expected %d H20 molecules, but %d were created!\n",
-			expected_molecules, water_molecules);
+		        expected_molecules, water_molecules);
 		exit(1);
 	}
 
-	if (hydrogen_atoms_bonded != (expected_molecules * 2)) {
+	if (hydrogen_atoms_bonded != (expected_molecules * 2))
+	{
 		fprintf(stderr, "Error: expected %d reaction_h() calls to return, but "
-			"%d did instead!\n", expected_molecules * 2,
-			hydrogen_atoms_bonded);
+		        "%d did instead!\n", expected_molecules * 2,
+		        hydrogen_atoms_bonded);
 		exit(1);
 	}
 
-	if (oxygen_atoms_bonded != expected_molecules) {
+	if (oxygen_atoms_bonded != expected_molecules)
+	{
 		fprintf(stderr, "Error: expected %d reaction_o() calls to return, but "
-			"%d did instead!\n", expected_molecules, oxygen_atoms_bonded);
+		        "%d did instead!\n", expected_molecules, oxygen_atoms_bonded);
 		exit(1);
 	}
 

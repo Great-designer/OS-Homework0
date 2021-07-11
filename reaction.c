@@ -1,16 +1,16 @@
 #include "pintos_thread.h"
 
-// ×ª·¢ÉùÃ÷¡£Õâ¸öº¯ÊıÊÇÔÚreaction-runner.cÖĞÊµÏÖµÄ£¬µ«Äú²»±Ø¹ØĞÄËüµÄ×÷ÓÃ¡£
-// Ö»ÒªÈ·±£ÔÚreaction_o()/reaction_h()ÖĞÊÊµ±µØµ÷ÓÃËü¡£
+// è½¬å‘å£°æ˜ã€‚è¿™ä¸ªå‡½æ•°æ˜¯åœ¨reaction-runner.cä¸­å®ç°çš„ï¼Œä½†æ‚¨ä¸å¿…å…³å¿ƒå®ƒçš„ä½œç”¨ã€‚
+// åªè¦ç¡®ä¿åœ¨reaction_o()/reaction_h()ä¸­é€‚å½“åœ°è°ƒç”¨å®ƒã€‚
 void make_water();
 
-struct reaction//Ò»¸ö·´Ó¦ÈİÆ÷ÖĞ 
+struct reaction//ä¸€ä¸ªååº”å®¹å™¨ä¸­
 {
 	struct lock Lock;
-	struct condition Arrival;//HÔ­×Óµ½´ï±äÁ¿ 
-	struct condition Occurred;//OÔ­×Ó²úÉú±äÁ¿ 
-	int Atoms;//HÔ­×Ó×ÜÊı¡£ÓĞ¿ÉÄÜH×ÜÊıÉÙÓÚ2 
-	int Needed;//OÔ­×ÓĞèÒªµÄHÔ­×ÓÊı¡£ÓĞ¿ÉÄÜO×ÜÊıÉÙÓÚ1 
+	struct condition Arrival;//HåŸå­åˆ°è¾¾å˜é‡
+	struct condition Occurred;//OåŸå­äº§ç”Ÿå˜é‡
+	int Atoms;//HåŸå­æ€»æ•°ã€‚æœ‰å¯èƒ½Hæ€»æ•°å°‘äº2
+	int Needed;//OåŸå­éœ€è¦çš„HåŸå­æ•°ã€‚æœ‰å¯èƒ½Oæ€»æ•°å°‘äº1
 };
 
 void reaction_init(struct reaction *reaction)
@@ -22,29 +22,29 @@ void reaction_init(struct reaction *reaction)
 	reaction->Needed=0;
 }
 
-void reaction_h(struct reaction *reaction)//Ã¿¸öHÔ­×Óµ÷ÓÃº¯Êı
+void reaction_h(struct reaction *reaction)//æ¯ä¸ªHåŸå­è°ƒç”¨å‡½æ•°
 {
-	lock_acquire(&reaction->Lock);//ÉÏËø 
-	reaction->Atoms++;//»ñµÃÒ»¸öHÔ­×Ó£¬·´Ó¦ÈİÆ÷ÖĞHÔ­×Ó×ÜÊıÔö¼Ó 
-	cond_signal(&reaction->Arrival,&reaction->Lock);//»½ĞÑÒ»¸öHÔ­×Óµ½´ï±äÁ¿ÉÏµÄÏß³Ì 
-	while(reaction->Needed==0)//Ö»Òª²»ĞèÒªHÔ­×Ó 
+	lock_acquire(&reaction->Lock);//ä¸Šé”
+	reaction->Atoms++;//è·å¾—ä¸€ä¸ªHåŸå­ï¼Œååº”å®¹å™¨ä¸­HåŸå­æ€»æ•°å¢åŠ 
+	cond_signal(&reaction->Arrival,&reaction->Lock);//å”¤é†’ä¸€ä¸ªHåŸå­åˆ°è¾¾å˜é‡ä¸Šçš„çº¿ç¨‹
+	while(reaction->Needed==0)//åªè¦ä¸éœ€è¦HåŸå­
 	{
-		cond_wait(&reaction->Occurred,&reaction->Lock);//µÈ´ıOÔ­×Ó²úÉú±äÁ¿£¬µÈ´ıĞèÒªHÔ­×Ó
+		cond_wait(&reaction->Occurred,&reaction->Lock);//ç­‰å¾…OåŸå­äº§ç”Ÿå˜é‡ï¼Œç­‰å¾…éœ€è¦HåŸå­
 	}
-	reaction->Needed--;//Ö»ÒªĞèÒªHÔ­×Ó£¬¾ÍÏûºÄ×Ô¼º 
-	lock_release(&reaction->Lock);//½âËø 
+	reaction->Needed--;//åªè¦éœ€è¦HåŸå­ï¼Œå°±æ¶ˆè€—è‡ªå·±
+	lock_release(&reaction->Lock);//è§£é”
 }
 
-void reaction_o(struct reaction *reaction)//Ã¿¸öOÔ­×Óµ÷ÓÃº¯Êı
+void reaction_o(struct reaction *reaction)//æ¯ä¸ªOåŸå­è°ƒç”¨å‡½æ•°
 {
-	lock_acquire(&reaction->Lock);//ÉÏËø 
-	while(reaction->Atoms<2)//Ö»Òª·´Ó¦ÈİÆ÷ÖĞHÔ­×ÓÊıÉÙÓÚ2¸ö 
+	lock_acquire(&reaction->Lock);//ä¸Šé”
+	while(reaction->Atoms<2)//åªè¦ååº”å®¹å™¨ä¸­HåŸå­æ•°å°‘äº2ä¸ª
 	{
-		cond_wait(&reaction->Arrival,&reaction->Lock);//µÈ´ıHÔ­×Óµ½´ï±äÁ¿£¬µÈ´ıHÔ­×ÓÊı¶àÓÚ2¸ö 
+		cond_wait(&reaction->Arrival,&reaction->Lock);//ç­‰å¾…HåŸå­åˆ°è¾¾å˜é‡ï¼Œç­‰å¾…HåŸå­æ•°å¤šäº2ä¸ª
 	}
-	reaction->Needed+=2;//ĞèÒªHÔ­×ÓÊıÔö¼Ó2 
-	reaction->Atoms-=2;//HÔ­×Ó×ÜÊı¼õÉÙ2 
-	cond_broadcast(&reaction->Occurred,&reaction->Lock);//»½ĞÑËùÓĞOÔ­×Ó²úÉú±äÁ¿ÉÏµÄÏß³Ì 
-	make_water();//Ö´ĞĞ»¯Ñ§·´Ó¦ 
-	lock_release(&reaction->Lock);//½âËø 
+	reaction->Needed+=2;//éœ€è¦HåŸå­æ•°å¢åŠ 2
+	reaction->Atoms-=2;//HåŸå­æ€»æ•°å‡å°‘2
+	cond_broadcast(&reaction->Occurred,&reaction->Lock);//å”¤é†’æ‰€æœ‰OåŸå­äº§ç”Ÿå˜é‡ä¸Šçš„çº¿ç¨‹
+	make_water();//æ‰§è¡ŒåŒ–å­¦ååº”
+	lock_release(&reaction->Lock);//è§£é”
 }

@@ -30,7 +30,8 @@ passenger_thread(void *arg)
 	return NULL;
 }
 
-struct load_train_args {
+struct load_train_args
+{
 	struct station *station;
 	int free_seats;
 };
@@ -61,8 +62,8 @@ void
 alarm_handler(int foo)
 {
 	fprintf(stderr, "Error: Failed to complete after %d seconds. Something's "
-		"wrong, or your system is terribly slow. Possible error hint: [%s]\n",
-		alarm_timeout, alarm_error_str);
+	        "wrong, or your system is terribly slow. Possible error hint: [%s]\n",
+	        alarm_timeout, alarm_error_str);
 	exit(1);
 }
 
@@ -93,10 +94,12 @@ main()
 	int i;
 	const int total_passengers = 1000;
 	int passengers_left = total_passengers;
-	for (i = 0; i < total_passengers; i++) {
+	for (i = 0; i < total_passengers; i++)
+	{
 		pthread_t tid;
 		int ret = pthread_create(&tid, NULL, passenger_thread, &station);
-		if (ret != 0) {
+		if (ret != 0)
+		{
 			// If this fails, perhaps we exceeded some system limit.
 			// Try reducing 'total_passengers'.
 			perror("pthread_create");
@@ -113,9 +116,10 @@ main()
 	int total_passengers_boarded = 0;
 	const int max_free_seats_per_train = 50;
 	int pass = 0;
-	while (passengers_left > 0) {
+	while (passengers_left > 0)
+	{
 		_alarm(2, "Some more complicated issue appears to have caused passengers "
-			"not to board when given the opportunity");
+		       "not to board when given the opportunity");
 
 		int free_seats = random() % max_free_seats_per_train;
 
@@ -124,19 +128,23 @@ main()
 		struct load_train_args args = { &station, free_seats };
 		pthread_t lt_tid;
 		int ret = pthread_create(&lt_tid, NULL, load_train_thread, &args);
-		if (ret != 0) {
+		if (ret != 0)
+		{
 			perror("pthread_create");
 			exit(1);
 		}
 
 		int threads_to_reap = MIN(passengers_left, free_seats);
 		int threads_reaped = 0;
-		while (threads_reaped < threads_to_reap) {
-			if (load_train_returned) {
+		while (threads_reaped < threads_to_reap)
+		{
+			if (load_train_returned)
+			{
 				fprintf(stderr, "Error: station_load_train returned early!\n");
 				exit(1);
 			}
-			if (threads_completed > 0) {
+			if (threads_completed > 0)
+			{
 				if ((pass % 2) == 0)
 					usleep(random() % 2);
 				threads_reaped++;
@@ -149,18 +157,21 @@ main()
 		// and ensure that no additional passengers board the train. One second
 		// should be tons of time, but if you're on a horribly overloaded system,
 		// this may need to be tweaked.
-		for (i = 0; i < 1000; i++) {
+		for (i = 0; i < 1000; i++)
+		{
 			if (i > 50 && load_train_returned)
 				break;
 			usleep(1000);
 		}
 
-		if (!load_train_returned) {
+		if (!load_train_returned)
+		{
 			fprintf(stderr, "Error: station_load_train failed to return\n");
 			exit(1);
 		}
 
-		while (threads_completed > 0) {
+		while (threads_completed > 0)
+		{
 			threads_reaped++;
 			__sync_sub_and_fetch(&threads_completed, 1);
 		}
@@ -168,10 +179,11 @@ main()
 		passengers_left -= threads_reaped;
 		total_passengers_boarded += threads_reaped;
 		printf("Train departed station with %d new passenger(s) (expected %d)%s\n",
-			threads_reaped, threads_to_reap,
-			(threads_to_reap != threads_reaped) ? " *****" : "");
+		       threads_reaped, threads_to_reap,
+		       (threads_to_reap != threads_reaped) ? " *****" : "");
 
-		if (threads_to_reap != threads_reaped) {
+		if (threads_to_reap != threads_reaped)
+		{
 			fprintf(stderr, "Error: Too many passengers on this train!\n");
 			exit(1);
 		}
@@ -179,13 +191,16 @@ main()
 		pass++;
 	}
 
-	if (total_passengers_boarded == total_passengers) {
+	if (total_passengers_boarded == total_passengers)
+	{
 		printf("Looks good!\n");
 		return 0;
-	} else {
+	}
+	else
+	{
 		// I don't think this is reachable, but just in case.
 		fprintf(stderr, "Error: expected %d total boarded passengers, but got %d!\n",
-			total_passengers, total_passengers_boarded);
+		        total_passengers, total_passengers_boarded);
 		return 1;
 	}
 }
